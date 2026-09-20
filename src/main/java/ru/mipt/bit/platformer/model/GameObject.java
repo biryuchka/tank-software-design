@@ -11,13 +11,14 @@ public abstract class GameObject {
         this.coordinates = new GridPoint2(coordinates);
     }
 
+    // a copy, so that nobody can move the object bypassing it
     public GridPoint2 getCoordinates() {
-        return coordinates;
+        return new GridPoint2(coordinates);
     }
 
     // by default an object stays in its tile and is not rotated
     public GridPoint2 getDestinationCoordinates() {
-        return coordinates;
+        return getCoordinates();
     }
 
     public float getMovementProgress() {

@@ -11,13 +11,13 @@ public class Level {
     private final int width;
     private final int height;
     private final Tank tank;
-    private final List<Tree> trees;
+    private final List<Obstacle> obstacles;
 
-    public Level(int width, int height, Tank tank, Collection<Tree> trees) {
+    public Level(int width, int height, Tank tank, Collection<? extends Obstacle> obstacles) {
         this.width = width;
         this.height = height;
         this.tank = tank;
-        this.trees = new ArrayList<>(trees);
+        this.obstacles = new ArrayList<>(obstacles);
     }
 
     // free means inside the level and not occupied by an obstacle
@@ -25,8 +25,8 @@ public class Level {
         if (!contains(coordinates)) {
             return false;
         }
-        for (Tree tree : trees) {
-            if (tree.getCoordinates().equals(coordinates)) {
+        for (Obstacle obstacle : obstacles) {
+            if (obstacle.getCoordinates().equals(coordinates)) {
                 return false;
             }
         }
@@ -35,14 +35,6 @@ public class Level {
 
     public void update(float deltaTime) {
         tank.update(deltaTime);
-    }
-
-    public Tank getTank() {
-        return tank;
-    }
-
-    public List<Tree> getTrees() {
-        return trees;
     }
 
     private boolean contains(GridPoint2 coordinates) {
