@@ -5,16 +5,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.controller.GdxKeyboard;
+import ru.mipt.bit.platformer.controller.InputController;
+import ru.mipt.bit.platformer.controller.MoveCommand;
 import ru.mipt.bit.platformer.graphics.LevelRenderer;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Level;
+import ru.mipt.bit.platformer.model.Movable;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -24,20 +26,8 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final String TANK_TEXTURE_PATH = "images/tank_blue.png";
     private static final String TREE_TEXTURE_PATH = "images/greenTree.png";
 
-    private static final Map<Integer, Direction> KEY_TO_DIRECTION = new LinkedHashMap<>();
-
-    static {
-        KEY_TO_DIRECTION.put(UP, Direction.UP);
-        KEY_TO_DIRECTION.put(W, Direction.UP);
-        KEY_TO_DIRECTION.put(LEFT, Direction.LEFT);
-        KEY_TO_DIRECTION.put(A, Direction.LEFT);
-        KEY_TO_DIRECTION.put(DOWN, Direction.DOWN);
-        KEY_TO_DIRECTION.put(S, Direction.DOWN);
-        KEY_TO_DIRECTION.put(RIGHT, Direction.RIGHT);
-        KEY_TO_DIRECTION.put(D, Direction.RIGHT);
-    }
-
     private LevelRenderer levelRenderer;
+    private InputController inputController;
     private Level level;
 
     @Override
@@ -56,19 +46,30 @@ public class GameDesktopLauncher implements ApplicationListener {
         for (Tree tree : trees) {
             levelRenderer.addObject(tree, TREE_TEXTURE_PATH);
         }
+
+        inputController = createInputController(tank);
+    }
+
+    private InputController createInputController(Movable tank) {
+        InputController controller = new InputController(new GdxKeyboard());
+        registerMovement(controller, tank, Direction.UP, UP, W);
+        registerMovement(controller, tank, Direction.LEFT, LEFT, A);
+        registerMovement(controller, tank, Direction.DOWN, DOWN, S);
+        registerMovement(controller, tank, Direction.RIGHT, RIGHT, D);
+        return controller;
+    }
+
+    private void registerMovement(InputController controller, Movable tank, Direction direction, int... keys) {
+        MoveCommand command = new MoveCommand(tank, direction, level);
+        for (int key : keys) {
+            controller.registerCommand(key, command);
+        }
     }
 
     @Override
     public void render() {
-        for (Map.Entry<Integer, Direction> keyDirection : KEY_TO_DIRECTION.entrySet()) {
-            if (Gdx.input.isKeyPressed(keyDirection.getKey())) {
-                level.getTank().move(keyDirection.getValue(), level);
-                break;
-            }
-        }
-
+        inputController.processInput();
         level.update(Gdx.graphics.getDeltaTime());
-
         levelRenderer.render();
     }
 
