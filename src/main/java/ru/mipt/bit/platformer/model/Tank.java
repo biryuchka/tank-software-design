@@ -28,12 +28,12 @@ public class Tank extends GameObject implements Movable {
     }
 
     @Override
-    public void move(Direction direction, Level level) {
+    public void move(Direction direction, Field field) {
         if (isMoving()) {
             return;
         }
         GridPoint2 nextCoordinates = direction.apply(coordinates);
-        if (level.isFree(nextCoordinates)) {
+        if (field.isFree(nextCoordinates)) {
             destinationCoordinates = nextCoordinates;
             movementProgress = 0f;
         }

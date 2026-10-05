@@ -3,10 +3,6 @@ package ru.mipt.bit.platformer.controller;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Runs the command bound to every key which is pressed right now.
- * A new key binding (shooting on space, for example) does not require changing this class.
- */
 public class InputController {
 
     private final Keyboard keyboard;

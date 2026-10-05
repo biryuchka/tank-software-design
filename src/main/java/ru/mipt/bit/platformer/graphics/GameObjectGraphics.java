@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Disposable;
 import ru.mipt.bit.platformer.model.GameObject;
 import ru.mipt.bit.platformer.util.TileMovement;
 
@@ -12,7 +11,7 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 
 /** Texture of a single game object and its place on the screen. */
-public class GameObjectGraphics implements Disposable {
+public class GameObjectGraphics implements Renderable {
 
     private final GameObject object;
     // Texture decodes an image file and loads it into GPU memory, it represents a native resource
@@ -27,6 +26,7 @@ public class GameObjectGraphics implements Disposable {
         this.rectangle = createBoundingRectangle(graphics);
     }
 
+    @Override
     public void render(Batch batch, TileMovement tileMovement) {
         // for a still object both tiles are the same, so it stays in its tile center
         tileMovement.moveRectangleBetweenTileCenters(rectangle, object.getCoordinates(),

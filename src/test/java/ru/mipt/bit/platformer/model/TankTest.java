@@ -4,8 +4,6 @@ import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TankTest {
 
     private static final float LONG_ENOUGH_TO_ARRIVE = 1f;
+    private static final Field EVERYTHING_IS_FREE = coordinates -> true;
+    private static final Field NOTHING_IS_FREE = coordinates -> false;
 
     private Tank tank;
-    private Level level;
 
     @BeforeEach
     void setUp() {
         tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
-        level = new Level(10, 8, tank, asList(new Tree(new GridPoint2(2, 1))));
     }
 
     @Test
@@ -32,7 +30,7 @@ class TankTest {
 
     @Test
     void startsMovingToFreeTile() {
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
 
         assertTrue(tank.isMoving());
         assertEquals(new GridPoint2(1, 2), tank.getDestinationCoordinates());
@@ -42,7 +40,7 @@ class TankTest {
 
     @Test
     void arrivesToDestinationAfterUpdate() {
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
 
         tank.update(LONG_ENOUGH_TO_ARRIVE);
 
@@ -51,32 +49,20 @@ class TankTest {
     }
 
     @Test
-    void turnsButDoesNotMoveIntoObstacle() {
-        tank.move(Direction.RIGHT, level);
+    void turnsButDoesNotMoveWhenTileIsTaken() {
+        tank.move(Direction.LEFT, NOTHING_IS_FREE);
         tank.update(LONG_ENOUGH_TO_ARRIVE);
 
         assertFalse(tank.isMoving());
         assertEquals(new GridPoint2(1, 1), tank.getCoordinates());
-        assertEquals(Direction.RIGHT.getRotation(), tank.getRotation());
-    }
-
-    @Test
-    void turnsButDoesNotMoveOutsideLevel() {
-        Tank cornerTank = new Tank(new GridPoint2(0, 0), Direction.UP);
-        Level emptyLevel = new Level(10, 8, cornerTank, emptyList());
-
-        cornerTank.move(Direction.LEFT, emptyLevel);
-        cornerTank.update(LONG_ENOUGH_TO_ARRIVE);
-
-        assertEquals(new GridPoint2(0, 0), cornerTank.getCoordinates());
-        assertEquals(Direction.LEFT.getRotation(), cornerTank.getRotation());
+        assertEquals(Direction.LEFT.getRotation(), tank.getRotation());
     }
 
     @Test
     void ignoresNewDirectionWhileMoving() {
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
 
-        tank.move(Direction.LEFT, level);
+        tank.move(Direction.LEFT, EVERYTHING_IS_FREE);
 
         assertEquals(new GridPoint2(1, 2), tank.getDestinationCoordinates());
         assertEquals(Direction.UP.getRotation(), tank.getRotation());
@@ -84,10 +70,10 @@ class TankTest {
 
     @Test
     void movesAgainAfterItHasArrived() {
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
         tank.update(LONG_ENOUGH_TO_ARRIVE);
 
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
 
         assertTrue(tank.isMoving());
         assertEquals(new GridPoint2(1, 3), tank.getDestinationCoordinates());
@@ -97,10 +83,9 @@ class TankTest {
     void movesWithGivenSpeed() {
         Tank slowTank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 1f);
         Tank fastTank = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.5f);
-        Level emptyLevel = new Level(10, 8, slowTank, emptyList());
 
-        slowTank.move(Direction.UP, emptyLevel);
-        fastTank.move(Direction.UP, emptyLevel);
+        slowTank.move(Direction.UP, EVERYTHING_IS_FREE);
+        fastTank.move(Direction.UP, EVERYTHING_IS_FREE);
         slowTank.update(0.5f);
         fastTank.update(0.5f);
 
@@ -110,7 +95,7 @@ class TankTest {
 
     @Test
     void reportsProgressWhileMoving() {
-        tank.move(Direction.UP, level);
+        tank.move(Direction.UP, EVERYTHING_IS_FREE);
 
         tank.update(0.1f);
 

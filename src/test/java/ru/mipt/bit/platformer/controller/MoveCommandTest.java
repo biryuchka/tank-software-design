@@ -1,40 +1,37 @@
 package ru.mipt.bit.platformer.controller;
 
-import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.Level;
+import ru.mipt.bit.platformer.model.Field;
 import ru.mipt.bit.platformer.model.Movable;
-import ru.mipt.bit.platformer.model.Tank;
 
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 class MoveCommandTest {
 
-    private final Level level = new Level(10, 8, new Tank(new GridPoint2(1, 1), Direction.RIGHT), emptyList());
+    private final Field field = coordinates -> true;
 
     @Test
     void movesGivenObjectInGivenDirection() {
         RecordingMovable movable = new RecordingMovable();
-        Command command = new MoveCommand(movable, Direction.UP, level);
+        Command command = new MoveCommand(movable, Direction.UP, field);
 
         command.execute();
 
         assertEquals(Direction.UP, movable.lastDirection);
-        assertSame(level, movable.lastLevel);
+        assertSame(field, movable.lastField);
     }
 
     private static class RecordingMovable implements Movable {
 
         private Direction lastDirection;
-        private Level lastLevel;
+        private Field lastField;
 
         @Override
-        public void move(Direction direction, Level level) {
+        public void move(Direction direction, Field field) {
             this.lastDirection = direction;
-            this.lastLevel = level;
+            this.lastField = field;
         }
 
         @Override

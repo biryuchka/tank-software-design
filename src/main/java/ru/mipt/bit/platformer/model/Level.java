@@ -3,24 +3,41 @@ package ru.mipt.bit.platformer.model;
 import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-public class Level {
+public class Level implements Field {
 
     private final int width;
     private final int height;
-    private final Tank tank;
-    private final List<Obstacle> obstacles;
+    // everything placed on the field, in the order it has to be drawn
+    private final List<GameObject> objects = new ArrayList<>();
+    private final List<Movable> movables = new ArrayList<>();
+    private final List<Obstacle> obstacles = new ArrayList<>();
+    private Movable player;
 
-    public Level(int width, int height, Tank tank, Collection<? extends Obstacle> obstacles) {
+    public Level(int width, int height) {
         this.width = width;
         this.height = height;
-        this.tank = tank;
-        this.obstacles = new ArrayList<>(obstacles);
     }
 
-    // free means inside the level and not occupied by an obstacle
+    public <T extends GameObject & Movable> void addPlayer(T player) {
+        this.player = player;
+        addMovable(player);
+    }
+
+    public <T extends GameObject & Movable> void addMovable(T movable) {
+        objects.add(movable);
+        movables.add(movable);
+    }
+
+    public <T extends GameObject & Obstacle> void addObstacle(T obstacle) {
+        objects.add(obstacle);
+        obstacles.add(obstacle);
+    }
+
+    // free means inside the field and not occupied by an obstacle
+    @Override
     public boolean isFree(GridPoint2 coordinates) {
         if (!contains(coordinates)) {
             return false;
@@ -34,7 +51,25 @@ public class Level {
     }
 
     public void update(float deltaTime) {
-        tank.update(deltaTime);
+        for (Movable movable : movables) {
+            movable.update(deltaTime);
+        }
+    }
+
+    public Movable getPlayer() {
+        return player;
+    }
+
+    public List<GameObject> getObjects() {
+        return Collections.unmodifiableList(objects);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     private boolean contains(GridPoint2 coordinates) {

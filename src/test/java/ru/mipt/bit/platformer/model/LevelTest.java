@@ -4,9 +4,10 @@ import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LevelTest {
@@ -17,7 +18,10 @@ class LevelTest {
     @BeforeEach
     void setUp() {
         tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
-        level = new Level(10, 8, tank, asList(new Tree(new GridPoint2(1, 3)), new Tree(new GridPoint2(4, 5))));
+        level = new Level(10, 8);
+        level.addPlayer(tank);
+        level.addObstacle(new Tree(new GridPoint2(1, 3)));
+        level.addObstacle(new Tree(new GridPoint2(4, 5)));
     }
 
     @Test
@@ -46,22 +50,31 @@ class LevelTest {
     }
 
     @Test
-    void anyObstacleBlocksItsTile() {
-        GridPoint2 rockCoordinates = new GridPoint2(6, 6);
-        Obstacle rock = () -> rockCoordinates;
-        Level levelWithRock = new Level(10, 8, tank, asList(rock));
-
-        assertFalse(levelWithRock.isFree(rockCoordinates));
-        assertTrue(levelWithRock.isFree(new GridPoint2(6, 7)));
-    }
-
-    @Test
-    void updateMovesTank() {
+    void updateMovesEveryMovable() {
+        Tank second = new Tank(new GridPoint2(6, 6), Direction.RIGHT);
+        level.addMovable(second);
         tank.move(Direction.UP, level);
+        second.move(Direction.UP, level);
 
         level.update(1f);
 
-        assertFalse(tank.isMoving());
         assertEquals(new GridPoint2(1, 2), tank.getCoordinates());
+        assertEquals(new GridPoint2(6, 7), second.getCoordinates());
+    }
+
+    @Test
+    void remembersPlayerAmongMovables() {
+        assertSame(tank, level.getPlayer());
+    }
+
+    @Test
+    void keepsEveryObjectForRendering() {
+        assertEquals(3, level.getObjects().size());
+    }
+
+    @Test
+    void objectsCannotBeAddedBypassingLevel() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> level.getObjects().add(new Tree(new GridPoint2(0, 7))));
     }
 }
