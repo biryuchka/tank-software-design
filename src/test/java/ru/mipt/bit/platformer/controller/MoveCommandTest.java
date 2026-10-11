@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.controller;
 
 import org.junit.jupiter.api.Test;
 import ru.mipt.bit.platformer.model.Direction;
+import com.badlogic.gdx.math.GridPoint2;
 import ru.mipt.bit.platformer.model.Field;
 import ru.mipt.bit.platformer.model.Movable;
 
@@ -27,6 +28,11 @@ class MoveCommandTest {
 
         private Direction lastDirection;
         private Field lastField;
+
+        @Override
+        public GridPoint2 getCoordinates() {
+            return new GridPoint2();
+        }
 
         @Override
         public void move(Direction direction, Field field) {

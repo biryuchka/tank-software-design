@@ -19,7 +19,9 @@ import ru.mipt.bit.platformer.graphics.Renderer;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameObject;
 import ru.mipt.bit.platformer.model.Level;
+import ru.mipt.bit.platformer.model.FileLevelSource;
 import ru.mipt.bit.platformer.model.LevelSource;
+import ru.mipt.bit.platformer.model.RandomLevelSource;
 import ru.mipt.bit.platformer.model.Movable;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
@@ -33,7 +35,13 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
-    private static final String LEVEL_PATH = "level.tmx";
+    private static final String LEVEL_MAP_PATH = "level.tmx";
+    private static final String LEVEL_LAYOUT_PATH = "level.txt";
+    private static final String RANDOM_LEVEL_ARGUMENT = "random";
+    // the tiled map the level is drawn on is 10x8 tiles
+    private static final int LEVEL_WIDTH = 10;
+    private static final int LEVEL_HEIGHT = 8;
+    private static final int RANDOM_TREE_COUNT = 12;
     private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0.2f, 1f);
     private static final Interpolation MOVEMENT_INTERPOLATION = Interpolation.smooth;
     private static final int WINDOW_WIDTH = 1280;
@@ -46,17 +54,23 @@ public class GameDesktopLauncher implements ApplicationListener {
         TEXTURE_PATHS.put(Tree.class, "images/greenTree.png");
     }
 
+    private final LevelSource levelSource;
+
     private Renderer renderer;
     private InputController inputController;
     private Level level;
 
+    public GameDesktopLauncher(LevelSource levelSource) {
+        this.levelSource = levelSource;
+    }
+
     @Override
     public void create() {
-        TiledMap map = new TmxMapLoader().load(LEVEL_PATH);
+        level = levelSource.load();
+
+        TiledMap map = new TmxMapLoader().load(LEVEL_MAP_PATH);
         TiledMapTileLayer groundLayer = getSingleLayer(map);
         TileMovement tileMovement = new TileMovement(groundLayer, MOVEMENT_INTERPOLATION);
-
-        level = LevelSource.hardcoded(groundLayer.getWidth(), groundLayer.getHeight()).load();
 
         LevelRenderer levelRenderer = new LevelRenderer(new SpriteBatch(), map, tileMovement, BACKGROUND_COLOR);
         for (GameObject object : level.getObjects()) {
@@ -114,6 +128,14 @@ public class GameDesktopLauncher implements ApplicationListener {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         // level width: 10 tiles x 128px, height: 8 tiles x 128px
         config.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
-        new Lwjgl3Application(new GameDesktopLauncher(), config);
+        new Lwjgl3Application(new GameDesktopLauncher(chooseLevelSource(args)), config);
+    }
+
+    // the only place which knows how the level is filled; swapping the strategy changes nothing else
+    private static LevelSource chooseLevelSource(String[] args) {
+        if (args.length > 0 && RANDOM_LEVEL_ARGUMENT.equals(args[0])) {
+            return new RandomLevelSource(LEVEL_WIDTH, LEVEL_HEIGHT, RANDOM_TREE_COUNT);
+        }
+        return new FileLevelSource(LEVEL_LAYOUT_PATH);
     }
 }
