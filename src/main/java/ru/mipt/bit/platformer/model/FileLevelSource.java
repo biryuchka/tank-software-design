@@ -73,7 +73,7 @@ public class FileLevelSource implements LevelSource {
                 if (symbol == TREE) {
                     level.addObstacle(new Tree(new GridPoint2(x, y)));
                 } else if (symbol == AI_TANK) {
-                    level.addMovable(new Tank(new GridPoint2(x, y), Direction.RIGHT));
+                    level.addCombatant(new Tank(new GridPoint2(x, y), Direction.RIGHT));
                 } else if (symbol == PLAYER) {
                     if (playerCoordinates != null) {
                         throw new IllegalArgumentException("Level file has more than one player start position");

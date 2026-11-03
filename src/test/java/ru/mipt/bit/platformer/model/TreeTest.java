@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class TreeTest {
 
@@ -15,6 +16,11 @@ class TreeTest {
         assertEquals(tree.getCoordinates(), tree.getDestinationCoordinates());
         assertEquals(1f, tree.getMovementProgress());
         assertEquals(0f, tree.getRotation());
+    }
+
+    @Test
+    void survivesBeingHit() {
+        assertFalse(new Tree(new GridPoint2(2, 5)).hit(100));
     }
 
     @Test

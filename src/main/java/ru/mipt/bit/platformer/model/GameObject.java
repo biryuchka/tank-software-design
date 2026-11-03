@@ -2,30 +2,18 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-/** Object placed on a tile of the level. */
-public abstract class GameObject {
+/** Object placed on a tile of the level: it has a place, a look and a reaction to being hit. */
+public interface GameObject {
 
-    protected final GridPoint2 coordinates;
+    GridPoint2 getCoordinates();
 
-    protected GameObject(GridPoint2 coordinates) {
-        this.coordinates = new GridPoint2(coordinates);
-    }
+    /** The tile the object is heading to; equal to the current one while it stands still. */
+    GridPoint2 getDestinationCoordinates();
 
-    // a copy, so that nobody can move the object bypassing it
-    public GridPoint2 getCoordinates() {
-        return new GridPoint2(coordinates);
-    }
+    float getMovementProgress();
 
-    // by default an object stays in its tile and is not rotated
-    public GridPoint2 getDestinationCoordinates() {
-        return getCoordinates();
-    }
+    float getRotation();
 
-    public float getMovementProgress() {
-        return 1f;
-    }
-
-    public float getRotation() {
-        return 0f;
-    }
+    /** @return true when the object does not survive the hit and has to leave the level */
+    boolean hit(int damage);
 }

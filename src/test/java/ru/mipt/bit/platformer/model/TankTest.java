@@ -1,6 +1,9 @@
 package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TankTest {
+
+    private static class CollectingRegistry implements BulletRegistry {
+
+        private final List<Bullet> bullets = new ArrayList<>();
+
+        @Override
+        public void addBullet(Bullet bullet) {
+            bullets.add(bullet);
+        }
+    }
 
     private static final float LONG_ENOUGH_TO_ARRIVE = 1f;
     private static final Field EVERYTHING_IS_FREE = coordinates -> true;
@@ -91,6 +104,61 @@ class TankTest {
 
         assertTrue(slowTank.isMoving());
         assertFalse(fastTank.isMoving());
+    }
+
+    @Test
+    void losesHealthWhenHitAndLeavesTheLevelOnlyWhenItGoesNegative() {
+        Tank target = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 1, 0.5f);
+
+        assertFalse(target.hit(1));
+        assertEquals(0, target.getHealth());
+        assertTrue(target.hit(1));
+    }
+
+    @Test
+    void firesABulletOnTheTileItLooksAt() {
+        Tank shooter = new Tank(new GridPoint2(3, 3), Direction.RIGHT);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        shooter.shoot(registry);
+
+        assertEquals(1, registry.bullets.size());
+        assertEquals(new GridPoint2(4, 3), registry.bullets.get(0).getCoordinates());
+    }
+
+    @Test
+    void firesWhereItLooksAfterTurning() {
+        Tank shooter = new Tank(new GridPoint2(3, 3), Direction.RIGHT);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        shooter.move(Direction.UP, NOTHING_IS_FREE);
+        shooter.shoot(registry);
+
+        assertEquals(new GridPoint2(3, 4), registry.bullets.get(0).getCoordinates());
+    }
+
+    @Test
+    void cannotFireAgainUntilItHasReloaded() {
+        Tank shooter = new Tank(new GridPoint2(3, 3), Direction.RIGHT, 0.4f, 3, 0.5f);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        shooter.shoot(registry);
+        shooter.shoot(registry);
+
+        assertEquals(1, registry.bullets.size());
+        assertFalse(shooter.canShoot());
+    }
+
+    @Test
+    void firesAgainOnceReloaded() {
+        Tank shooter = new Tank(new GridPoint2(3, 3), Direction.RIGHT, 0.4f, 3, 0.5f);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        shooter.shoot(registry);
+        shooter.update(1f);
+        shooter.shoot(registry);
+
+        assertEquals(2, registry.bullets.size());
     }
 
     @Test

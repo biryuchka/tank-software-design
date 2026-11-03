@@ -1,10 +1,11 @@
 package ru.mipt.bit.platformer.controller;
 
+import ru.mipt.bit.platformer.model.BulletRegistry;
+import ru.mipt.bit.platformer.model.Combatant;
 import ru.mipt.bit.platformer.model.Field;
-import ru.mipt.bit.platformer.model.Movable;
 
-/** Strategy which decides what a tank controlled by AI does on this frame. */
+/** Strategy which decides what a unit controlled by AI does on this frame: drive or fire. */
 public interface TankBehaviour {
 
-    Command decide(Movable tank, Field field);
+    Command decide(Combatant tank, Field field, BulletRegistry registry);
 }

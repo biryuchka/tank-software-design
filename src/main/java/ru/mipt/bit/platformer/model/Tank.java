@@ -2,29 +2,30 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import static com.badlogic.gdx.math.MathUtils.isEqual;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
+public class Tank implements GameObject, Combatant {
 
-public class Tank extends GameObject implements Movable {
+    public static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
+    public static final int DEFAULT_HEALTH = 3;
+    public static final float DEFAULT_RELOAD_TIME = 0.7f;
 
-    private static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
-
-    // which tile the tank wants to go next
-    private GridPoint2 destinationCoordinates;
-    private float movementProgress = 1f;
-    private Direction direction;
-    // seconds it takes to cross one tile
-    private final float movementSpeed;
+    private final Movement movement;
+    private int health;
+    private final float reloadTime;
+    private float timeSinceLastShot;
 
     public Tank(GridPoint2 coordinates, Direction direction) {
-        this(coordinates, direction, DEFAULT_MOVEMENT_SPEED);
+        this(coordinates, direction, DEFAULT_MOVEMENT_SPEED, DEFAULT_HEALTH, DEFAULT_RELOAD_TIME);
     }
 
     public Tank(GridPoint2 coordinates, Direction direction, float movementSpeed) {
-        super(coordinates);
-        this.destinationCoordinates = new GridPoint2(coordinates);
-        this.direction = direction;
-        this.movementSpeed = movementSpeed;
+        this(coordinates, direction, movementSpeed, DEFAULT_HEALTH, DEFAULT_RELOAD_TIME);
+    }
+
+    public Tank(GridPoint2 coordinates, Direction direction, float movementSpeed, int health, float reloadTime) {
+        this.movement = new Movement(coordinates, direction, movementSpeed);
+        this.health = health;
+        this.reloadTime = reloadTime;
+        this.timeSinceLastShot = reloadTime;
     }
 
     @Override
@@ -32,41 +33,68 @@ public class Tank extends GameObject implements Movable {
         if (isMoving()) {
             return;
         }
-        GridPoint2 nextCoordinates = direction.apply(coordinates);
+        GridPoint2 nextCoordinates = direction.apply(movement.getCoordinates());
         if (field.isFree(nextCoordinates)) {
-            destinationCoordinates = nextCoordinates;
-            movementProgress = 0f;
+            movement.goTo(nextCoordinates);
         }
         // the tank turns even when the way is blocked
-        this.direction = direction;
+        movement.turn(direction);
+    }
+
+    @Override
+    public boolean canShoot() {
+        return timeSinceLastShot >= reloadTime;
+    }
+
+    @Override
+    public void shoot(BulletRegistry registry) {
+        if (!canShoot()) {
+            return;
+        }
+        timeSinceLastShot = 0f;
+        // the bullet starts on the tile the tank looks at
+        registry.addBullet(new Bullet(movement.getNextCoordinates(), movement.getDirection()));
     }
 
     @Override
     public void update(float deltaTime) {
-        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
-        if (!isMoving()) {
-            // record that the tank has reached its destination
-            coordinates.set(destinationCoordinates);
-        }
+        movement.update(deltaTime);
+        timeSinceLastShot += deltaTime;
     }
 
     @Override
     public boolean isMoving() {
-        return !isEqual(movementProgress, 1f);
+        return movement.isMoving();
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    @Override
+    public boolean hit(int damage) {
+        health -= damage;
+        // a tank with negative health leaves the level
+        return health < 0;
+    }
+
+    @Override
+    public GridPoint2 getCoordinates() {
+        return movement.getCoordinates();
     }
 
     @Override
     public GridPoint2 getDestinationCoordinates() {
-        return new GridPoint2(destinationCoordinates);
+        return movement.getDestinationCoordinates();
     }
 
     @Override
     public float getMovementProgress() {
-        return movementProgress;
+        return movement.getProgress();
     }
 
     @Override
     public float getRotation() {
-        return direction.getRotation();
+        return movement.getDirection().getRotation();
     }
 }
