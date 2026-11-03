@@ -71,8 +71,8 @@ class RandomLevelSourceTest {
         Level level = new RandomLevelSource(10, 8, 5, 4, 5L).load();
 
         // four tanks driven by AI plus the player
-        assertEquals(5, level.getMovables().size());
-        assertTrue(level.getMovables().contains(level.getPlayer()));
+        assertEquals(5, level.getCombatants().size());
+        assertTrue(level.getCombatants().contains(level.getPlayer()));
     }
 
     @Test

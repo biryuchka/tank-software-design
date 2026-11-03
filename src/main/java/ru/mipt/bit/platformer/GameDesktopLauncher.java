@@ -17,25 +17,24 @@ import ru.mipt.bit.platformer.controller.GdxKeyboard;
 import ru.mipt.bit.platformer.controller.InputController;
 import ru.mipt.bit.platformer.controller.MoveCommand;
 import ru.mipt.bit.platformer.controller.RandomTankBehaviour;
-import ru.mipt.bit.platformer.graphics.GameObjectGraphics;
+import ru.mipt.bit.platformer.controller.ShootCommand;
 import ru.mipt.bit.platformer.graphics.LevelRenderer;
+import ru.mipt.bit.platformer.graphics.TextureGraphicsFactory;
 import ru.mipt.bit.platformer.graphics.Renderer;
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.GameObject;
 import ru.mipt.bit.platformer.model.Level;
 import ru.mipt.bit.platformer.model.FileLevelSource;
 import ru.mipt.bit.platformer.model.LevelSource;
 import ru.mipt.bit.platformer.model.RandomLevelSource;
-import ru.mipt.bit.platformer.model.Movable;
+import ru.mipt.bit.platformer.model.Bullet;
+import ru.mipt.bit.platformer.model.Combatant;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
@@ -50,17 +49,13 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final int LEVEL_HEIGHT = 8;
     private static final int RANDOM_TREE_COUNT = 12;
     private static final int RANDOM_AI_TANK_COUNT = 4;
+    private static final String TANK_TEXTURE_PATH = "images/tank_blue.png";
+    private static final String TREE_TEXTURE_PATH = "images/greenTree.png";
+    private static final String BULLET_TEXTURE_PATH = "images/brick.png";
     private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0.2f, 1f);
     private static final Interpolation MOVEMENT_INTERPOLATION = Interpolation.smooth;
     private static final int WINDOW_WIDTH = 1280;
     private static final int WINDOW_HEIGHT = 1024;
-
-    private static final Map<Class<? extends GameObject>, String> TEXTURE_PATHS = new HashMap<>();
-
-    static {
-        TEXTURE_PATHS.put(Tank.class, "images/tank_blue.png");
-        TEXTURE_PATHS.put(Tree.class, "images/greenTree.png");
-    }
 
     private final LevelSource levelSource;
 
@@ -75,38 +70,43 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     @Override
     public void create() {
-        level = levelSource.load();
-
         TiledMap map = new TmxMapLoader().load(LEVEL_MAP_PATH);
         TiledMapTileLayer groundLayer = getSingleLayer(map);
         TileMovement tileMovement = new TileMovement(groundLayer, MOVEMENT_INTERPOLATION);
 
-        LevelRenderer levelRenderer = new LevelRenderer(new SpriteBatch(), map, tileMovement, BACKGROUND_COLOR);
-        for (GameObject object : level.getObjects()) {
-            levelRenderer.add(new GameObjectGraphics(object, TEXTURE_PATHS.get(object.getClass())));
-        }
+        TextureGraphicsFactory graphicsFactory = new TextureGraphicsFactory()
+                .register(Tank.class, TANK_TEXTURE_PATH)
+                .register(Tree.class, TREE_TEXTURE_PATH)
+                .register(Bullet.class, BULLET_TEXTURE_PATH);
+        LevelRenderer levelRenderer =
+                new LevelRenderer(new SpriteBatch(), map, tileMovement, BACKGROUND_COLOR, graphicsFactory);
         renderer = levelRenderer;
+
+        level = levelSource.load();
+        // the graphics learn about the objects already placed and about every later change
+        level.addListener(levelRenderer);
 
         commandProviders.add(createInputController(level.getPlayer()));
         commandProviders.add(createAi());
     }
 
-    private InputController createInputController(Movable player) {
+    private InputController createInputController(Combatant player) {
         InputController controller = new InputController(new GdxKeyboard());
         registerMovement(controller, player, Direction.UP, UP, W);
         registerMovement(controller, player, Direction.LEFT, LEFT, A);
         registerMovement(controller, player, Direction.DOWN, DOWN, S);
         registerMovement(controller, player, Direction.RIGHT, RIGHT, D);
+        controller.registerCommand(SPACE, new ShootCommand(player, level));
         return controller;
     }
 
     private AiCommandProvider createAi() {
-        List<Movable> aiTanks = new ArrayList<>(level.getMovables());
+        List<Combatant> aiTanks = new ArrayList<>(level.getCombatants());
         aiTanks.remove(level.getPlayer());
-        return new AiCommandProvider(aiTanks, new RandomTankBehaviour(), level);
+        return new AiCommandProvider(aiTanks, new RandomTankBehaviour(), level, level);
     }
 
-    private void registerMovement(InputController controller, Movable player, Direction direction, int... keys) {
+    private void registerMovement(InputController controller, Combatant player, Direction direction, int... keys) {
         MoveCommand command = new MoveCommand(player, direction, level);
         for (int key : keys) {
             controller.registerCommand(key, command);

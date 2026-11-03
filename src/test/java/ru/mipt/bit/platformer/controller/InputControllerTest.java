@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.controller;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -88,7 +89,7 @@ class InputControllerTest {
         assertEquals(2, command.executions);
     }
 
-    private static void execute(java.util.Collection<Command> commands) {
+    private static void execute(Collection<Command> commands) {
         for (Command command : commands) {
             command.execute();
         }

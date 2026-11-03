@@ -52,7 +52,7 @@ class LevelTest {
     @Test
     void updateMovesEveryMovable() {
         Tank second = new Tank(new GridPoint2(6, 6), Direction.RIGHT);
-        level.addMovable(second);
+        level.addCombatant(second);
         tank.move(Direction.UP, level);
         second.move(Direction.UP, level);
 
@@ -80,7 +80,7 @@ class LevelTest {
     @Test
     void anotherTankCannotEnterTileBeingLeft() {
         Tank chaser = new Tank(new GridPoint2(0, 1), Direction.RIGHT);
-        level.addMovable(chaser);
+        level.addCombatant(chaser);
         tank.move(Direction.UP, level);
 
         chaser.move(Direction.RIGHT, level);
@@ -92,7 +92,7 @@ class LevelTest {
     @Test
     void anotherTankCannotEnterTileBeingEntered() {
         Tank rival = new Tank(new GridPoint2(2, 2), Direction.RIGHT);
-        level.addMovable(rival);
+        level.addCombatant(rival);
         tank.move(Direction.UP, level);
 
         rival.move(Direction.LEFT, level);
@@ -114,8 +114,8 @@ class LevelTest {
     void twoTanksCannotTakeTheSameTile() {
         Tank first = new Tank(new GridPoint2(5, 5), Direction.RIGHT);
         Tank second = new Tank(new GridPoint2(7, 5), Direction.RIGHT);
-        level.addMovable(first);
-        level.addMovable(second);
+        level.addCombatant(first);
+        level.addCombatant(second);
 
         first.move(Direction.RIGHT, level);
         second.move(Direction.LEFT, level);

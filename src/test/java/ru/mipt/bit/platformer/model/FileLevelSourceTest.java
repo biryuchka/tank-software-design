@@ -83,7 +83,7 @@ class FileLevelSourceTest {
                 "_X_"));
 
         // two AI tanks plus the player
-        assertEquals(3, level.getMovables().size());
+        assertEquals(3, level.getCombatants().size());
         assertEquals(3, level.getObjects().size());
     }
 

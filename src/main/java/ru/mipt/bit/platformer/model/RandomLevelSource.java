@@ -42,7 +42,7 @@ public class RandomLevelSource implements LevelSource {
             level.addObstacle(new Tree(freeTile(random, taken)));
         }
         for (int i = 0; i < aiTankCount; i++) {
-            level.addMovable(new Tank(freeTile(random, taken), Direction.RIGHT));
+            level.addCombatant(new Tank(freeTile(random, taken), Direction.RIGHT));
         }
         level.addPlayer(new Tank(freeTile(random, taken), Direction.RIGHT));
         return level;
