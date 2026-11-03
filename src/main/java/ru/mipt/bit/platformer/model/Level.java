@@ -36,7 +36,7 @@ public class Level implements Field {
         obstacles.add(obstacle);
     }
 
-    // free means inside the field and not occupied by an obstacle
+    // free means inside the field, not occupied by an obstacle and not taken by a moving object
     @Override
     public boolean isFree(GridPoint2 coordinates) {
         if (!contains(coordinates)) {
@@ -44,6 +44,13 @@ public class Level implements Field {
         }
         for (Obstacle obstacle : obstacles) {
             if (obstacle.getCoordinates().equals(coordinates)) {
+                return false;
+            }
+        }
+        for (Movable movable : movables) {
+            // a moving object holds both the tile it leaves and the tile it heads to
+            if (movable.getCoordinates().equals(coordinates)
+                    || movable.getDestinationCoordinates().equals(coordinates)) {
                 return false;
             }
         }
@@ -58,6 +65,10 @@ public class Level implements Field {
 
     public Movable getPlayer() {
         return player;
+    }
+
+    public List<Movable> getMovables() {
+        return Collections.unmodifiableList(movables);
     }
 
     public List<GameObject> getObjects() {

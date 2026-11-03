@@ -77,6 +77,26 @@ class FileLevelSourceTest {
     }
 
     @Test
+    void readsTanksDrivenByAi() {
+        Level level = FileLevelSource.parse(asList(
+                "E_E",
+                "_X_"));
+
+        // two AI tanks plus the player
+        assertEquals(3, level.getMovables().size());
+        assertEquals(3, level.getObjects().size());
+    }
+
+    @Test
+    void tilesUnderAiTanksAreTaken() {
+        Level level = FileLevelSource.parse(asList(
+                "E__",
+                "_X_"));
+
+        assertFalse(level.isFree(new GridPoint2(0, 1)));
+    }
+
+    @Test
     void refusesLayoutWithoutPlayer() {
         List<String> lines = singletonList("T__");
 

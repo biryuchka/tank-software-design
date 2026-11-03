@@ -1,9 +1,12 @@
 package ru.mipt.bit.platformer.controller;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class InputController {
+/** Turns the keys pressed right now into commands. */
+public class InputController implements CommandProvider {
 
     private final Keyboard keyboard;
     private final Map<Integer, Command> commands = new LinkedHashMap<>();
@@ -16,11 +19,14 @@ public class InputController {
         commands.put(key, command);
     }
 
-    public void processInput() {
+    @Override
+    public Collection<Command> commands() {
+        Collection<Command> pressed = new ArrayList<>();
         for (Map.Entry<Integer, Command> keyCommand : commands.entrySet()) {
             if (keyboard.isKeyPressed(keyCommand.getKey())) {
-                keyCommand.getValue().execute();
+                pressed.add(keyCommand.getValue());
             }
         }
+        return pressed;
     }
 }

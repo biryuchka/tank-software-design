@@ -63,6 +63,68 @@ class LevelTest {
     }
 
     @Test
+    void tileUnderATankIsNotFree() {
+        assertFalse(level.isFree(new GridPoint2(1, 1)));
+    }
+
+    @Test
+    void movingTankHoldsBothTilesItIsBetween() {
+        tank.move(Direction.UP, level);
+
+        // it has not arrived yet, so it holds the tile it left and the tile it heads to
+        assertTrue(tank.isMoving());
+        assertFalse(level.isFree(new GridPoint2(1, 1)));
+        assertFalse(level.isFree(new GridPoint2(1, 2)));
+    }
+
+    @Test
+    void anotherTankCannotEnterTileBeingLeft() {
+        Tank chaser = new Tank(new GridPoint2(0, 1), Direction.RIGHT);
+        level.addMovable(chaser);
+        tank.move(Direction.UP, level);
+
+        chaser.move(Direction.RIGHT, level);
+
+        assertFalse(chaser.isMoving());
+        assertEquals(new GridPoint2(0, 1), chaser.getCoordinates());
+    }
+
+    @Test
+    void anotherTankCannotEnterTileBeingEntered() {
+        Tank rival = new Tank(new GridPoint2(2, 2), Direction.RIGHT);
+        level.addMovable(rival);
+        tank.move(Direction.UP, level);
+
+        rival.move(Direction.LEFT, level);
+
+        assertFalse(rival.isMoving());
+        assertEquals(new GridPoint2(2, 2), rival.getCoordinates());
+    }
+
+    @Test
+    void tileIsFreeAgainAfterTheTankHasLeftIt() {
+        tank.move(Direction.UP, level);
+        level.update(1f);
+
+        assertTrue(level.isFree(new GridPoint2(1, 1)));
+        assertFalse(level.isFree(new GridPoint2(1, 2)));
+    }
+
+    @Test
+    void twoTanksCannotTakeTheSameTile() {
+        Tank first = new Tank(new GridPoint2(5, 5), Direction.RIGHT);
+        Tank second = new Tank(new GridPoint2(7, 5), Direction.RIGHT);
+        level.addMovable(first);
+        level.addMovable(second);
+
+        first.move(Direction.RIGHT, level);
+        second.move(Direction.LEFT, level);
+
+        assertTrue(first.isMoving());
+        assertFalse(second.isMoving());
+    }
+
+    @Test
     void remembersPlayerAmongMovables() {
         assertSame(tank, level.getPlayer());
     }

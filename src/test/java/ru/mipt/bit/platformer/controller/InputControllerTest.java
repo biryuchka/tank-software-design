@@ -22,7 +22,7 @@ class InputControllerTest {
         controller.registerCommand(FIRST_KEY, command);
 
         keyboard.press(FIRST_KEY);
-        controller.processInput();
+        execute(controller.commands());
 
         assertEquals(1, command.executions);
     }
@@ -32,7 +32,7 @@ class InputControllerTest {
         CountingCommand command = new CountingCommand();
         controller.registerCommand(FIRST_KEY, command);
 
-        controller.processInput();
+        execute(controller.commands());
 
         assertEquals(0, command.executions);
     }
@@ -46,7 +46,7 @@ class InputControllerTest {
 
         keyboard.press(FIRST_KEY);
         keyboard.press(SECOND_KEY);
-        controller.processInput();
+        execute(controller.commands());
 
         assertEquals(1, first.executions);
         assertEquals(1, second.executions);
@@ -58,7 +58,7 @@ class InputControllerTest {
         controller.registerCommand(FIRST_KEY, command);
 
         keyboard.press(UNBOUND_KEY);
-        controller.processInput();
+        execute(controller.commands());
 
         assertEquals(0, command.executions);
     }
@@ -71,7 +71,7 @@ class InputControllerTest {
 
         keyboard.press(FIRST_KEY);
         keyboard.press(SECOND_KEY);
-        controller.processInput();
+        execute(controller.commands());
 
         assertEquals(2, command.executions);
     }
@@ -82,10 +82,16 @@ class InputControllerTest {
         controller.registerCommand(FIRST_KEY, command);
 
         keyboard.press(FIRST_KEY);
-        controller.processInput();
-        controller.processInput();
+        execute(controller.commands());
+        execute(controller.commands());
 
         assertEquals(2, command.executions);
+    }
+
+    private static void execute(java.util.Collection<Command> commands) {
+        for (Command command : commands) {
+            command.execute();
+        }
     }
 
     private static class FakeKeyboard implements Keyboard {
