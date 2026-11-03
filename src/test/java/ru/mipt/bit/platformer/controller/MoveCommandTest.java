@@ -35,6 +35,11 @@ class MoveCommandTest {
         }
 
         @Override
+        public GridPoint2 getDestinationCoordinates() {
+            return new GridPoint2();
+        }
+
+        @Override
         public void move(Direction direction, Field field) {
             this.lastDirection = direction;
             this.lastField = field;

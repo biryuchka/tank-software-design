@@ -7,6 +7,9 @@ public interface Movable {
 
     GridPoint2 getCoordinates();
 
+    /** The tile the object is heading to; equal to the current one while it stands still. */
+    GridPoint2 getDestinationCoordinates();
+
     void move(Direction direction, Field field);
 
     void update(float deltaTime);

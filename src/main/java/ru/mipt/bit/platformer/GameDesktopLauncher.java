@@ -10,9 +10,13 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Interpolation;
+import ru.mipt.bit.platformer.controller.AiCommandProvider;
+import ru.mipt.bit.platformer.controller.Command;
+import ru.mipt.bit.platformer.controller.CommandProvider;
 import ru.mipt.bit.platformer.controller.GdxKeyboard;
 import ru.mipt.bit.platformer.controller.InputController;
 import ru.mipt.bit.platformer.controller.MoveCommand;
+import ru.mipt.bit.platformer.controller.RandomTankBehaviour;
 import ru.mipt.bit.platformer.graphics.GameObjectGraphics;
 import ru.mipt.bit.platformer.graphics.LevelRenderer;
 import ru.mipt.bit.platformer.graphics.Renderer;
@@ -27,7 +31,10 @@ import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -42,6 +49,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final int LEVEL_WIDTH = 10;
     private static final int LEVEL_HEIGHT = 8;
     private static final int RANDOM_TREE_COUNT = 12;
+    private static final int RANDOM_AI_TANK_COUNT = 4;
     private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0.2f, 1f);
     private static final Interpolation MOVEMENT_INTERPOLATION = Interpolation.smooth;
     private static final int WINDOW_WIDTH = 1280;
@@ -56,8 +64,9 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private final LevelSource levelSource;
 
+    private final List<CommandProvider> commandProviders = new ArrayList<>();
+
     private Renderer renderer;
-    private InputController inputController;
     private Level level;
 
     public GameDesktopLauncher(LevelSource levelSource) {
@@ -78,7 +87,8 @@ public class GameDesktopLauncher implements ApplicationListener {
         }
         renderer = levelRenderer;
 
-        inputController = createInputController(level.getPlayer());
+        commandProviders.add(createInputController(level.getPlayer()));
+        commandProviders.add(createAi());
     }
 
     private InputController createInputController(Movable player) {
@@ -90,6 +100,12 @@ public class GameDesktopLauncher implements ApplicationListener {
         return controller;
     }
 
+    private AiCommandProvider createAi() {
+        List<Movable> aiTanks = new ArrayList<>(level.getMovables());
+        aiTanks.remove(level.getPlayer());
+        return new AiCommandProvider(aiTanks, new RandomTankBehaviour(), level);
+    }
+
     private void registerMovement(InputController controller, Movable player, Direction direction, int... keys) {
         MoveCommand command = new MoveCommand(player, direction, level);
         for (int key : keys) {
@@ -99,8 +115,21 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     @Override
     public void render() {
-        inputController.processInput();
+        // 1. collect the commands of this frame: from the keyboard and from AI
+        Collection<Command> commands = new ArrayList<>();
+        for (CommandProvider provider : commandProviders) {
+            commands.addAll(provider.commands());
+        }
+
+        // 2. execute them
+        for (Command command : commands) {
+            command.execute();
+        }
+
+        // 3. let every object of the level live through the time passed
         level.update(Gdx.graphics.getDeltaTime());
+
+        // 4. draw the level
         renderer.render();
     }
 
@@ -134,7 +163,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     // the only place which knows how the level is filled; swapping the strategy changes nothing else
     private static LevelSource chooseLevelSource(String[] args) {
         if (args.length > 0 && RANDOM_LEVEL_ARGUMENT.equals(args[0])) {
-            return new RandomLevelSource(LEVEL_WIDTH, LEVEL_HEIGHT, RANDOM_TREE_COUNT);
+            return new RandomLevelSource(LEVEL_WIDTH, LEVEL_HEIGHT, RANDOM_TREE_COUNT, RANDOM_AI_TANK_COUNT);
         }
         return new FileLevelSource(LEVEL_LAYOUT_PATH);
     }

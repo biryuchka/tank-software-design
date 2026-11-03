@@ -12,13 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Reads the whole level from a text file: 'T' is a tree, 'X' is the player start
- * position, '_' is an empty tile. The first line of the file is the top row of the field.
+ * Reads the whole level from a text file: 'T' is a tree, 'X' is the player start position,
+ * 'E' is a tank driven by AI, '_' is an empty tile. The first line of the file is the top row.
  */
 public class FileLevelSource implements LevelSource {
 
     private static final char TREE = 'T';
     private static final char PLAYER = 'X';
+    private static final char AI_TANK = 'E';
     private static final char EMPTY = '_';
 
     private final String resourcePath;
@@ -71,6 +72,8 @@ public class FileLevelSource implements LevelSource {
                 char symbol = line.charAt(x);
                 if (symbol == TREE) {
                     level.addObstacle(new Tree(new GridPoint2(x, y)));
+                } else if (symbol == AI_TANK) {
+                    level.addMovable(new Tank(new GridPoint2(x, y), Direction.RIGHT));
                 } else if (symbol == PLAYER) {
                     if (playerCoordinates != null) {
                         throw new IllegalArgumentException("Level file has more than one player start position");
