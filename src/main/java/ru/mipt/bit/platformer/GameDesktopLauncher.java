@@ -18,9 +18,13 @@ import ru.mipt.bit.platformer.controller.InputController;
 import ru.mipt.bit.platformer.controller.MoveCommand;
 import ru.mipt.bit.platformer.controller.RandomTankBehaviour;
 import ru.mipt.bit.platformer.controller.ShootCommand;
+import ru.mipt.bit.platformer.controller.ToggleCommand;
+import ru.mipt.bit.platformer.graphics.HealthBarDecorator;
+import ru.mipt.bit.platformer.graphics.LevelGraphics;
 import ru.mipt.bit.platformer.graphics.LevelRenderer;
 import ru.mipt.bit.platformer.graphics.TextureGraphicsFactory;
 import ru.mipt.bit.platformer.graphics.Renderer;
+import ru.mipt.bit.platformer.model.BoundedLevelSource;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Level;
 import ru.mipt.bit.platformer.model.FileLevelSource;
@@ -78,25 +82,25 @@ public class GameDesktopLauncher implements ApplicationListener {
                 .register(Tank.class, TANK_TEXTURE_PATH)
                 .register(Tree.class, TREE_TEXTURE_PATH)
                 .register(Bullet.class, BULLET_TEXTURE_PATH);
-        LevelRenderer levelRenderer =
-                new LevelRenderer(new SpriteBatch(), map, tileMovement, BACKGROUND_COLOR, graphicsFactory);
-        renderer = levelRenderer;
+        LevelGraphics levelGraphics = new LevelGraphics(graphicsFactory, new HealthBarDecorator());
+        renderer = new LevelRenderer(new SpriteBatch(), map, tileMovement, BACKGROUND_COLOR, levelGraphics);
 
-        level = levelSource.load();
+        level = new BoundedLevelSource(levelSource, groundLayer.getWidth(), groundLayer.getHeight()).load();
         // the graphics learn about the objects already placed and about every later change
-        level.addListener(levelRenderer);
+        level.addListener(levelGraphics);
 
-        commandProviders.add(createInputController(level.getPlayer()));
+        commandProviders.add(createInputController(level.getPlayer(), levelGraphics));
         commandProviders.add(createAi());
     }
 
-    private InputController createInputController(Combatant player) {
+    private InputController createInputController(Combatant player, LevelGraphics levelGraphics) {
         InputController controller = new InputController(new GdxKeyboard());
         registerMovement(controller, player, Direction.UP, UP, W);
         registerMovement(controller, player, Direction.LEFT, LEFT, A);
         registerMovement(controller, player, Direction.DOWN, DOWN, S);
         registerMovement(controller, player, Direction.RIGHT, RIGHT, D);
         controller.registerCommand(SPACE, new ShootCommand(player, level));
+        controller.registerOnPress(L, new ToggleCommand(levelGraphics::toggleHealthBars));
         return controller;
     }
 

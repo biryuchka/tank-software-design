@@ -81,8 +81,8 @@ class LevelBulletsTest {
     }
 
     @Test
-    void tankWithNegativeHealthLeavesTheLevel() {
-        Tank target = new Tank(new GridPoint2(4, 1), Direction.LEFT, 0.4f, 0, 0f);
+    void tankWithoutHealthLeftLeavesTheLevel() {
+        Tank target = new Tank(new GridPoint2(4, 1), Direction.LEFT, 0.4f, 1, 0f);
         level.addCombatant(target);
         player.shoot(level);
 
@@ -90,7 +90,7 @@ class LevelBulletsTest {
             level.update(LONG_ENOUGH_TO_FLY_A_TILE);
         }
 
-        // health went 0 -> -1, so both the target and the bullet are gone
+        // one hit is enough to take the last health away, so the target and the bullet are both gone
         assertEquals(1, level.getObjects().size());
         assertTrue(level.isFree(new GridPoint2(4, 1)));
     }

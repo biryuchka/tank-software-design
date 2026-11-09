@@ -9,21 +9,31 @@ import java.util.Map;
 public class InputController implements CommandProvider {
 
     private final Keyboard keyboard;
-    private final Map<Integer, Command> commands = new LinkedHashMap<>();
+    private final Map<Integer, Command> whileHeld = new LinkedHashMap<>();
+    private final Map<Integer, Command> onPress = new LinkedHashMap<>();
 
     public InputController(Keyboard keyboard) {
         this.keyboard = keyboard;
     }
 
     public void registerCommand(int key, Command command) {
-        commands.put(key, command);
+        whileHeld.put(key, command);
+    }
+
+    public void registerOnPress(int key, Command command) {
+        onPress.put(key, command);
     }
 
     @Override
     public Collection<Command> commands() {
         Collection<Command> pressed = new ArrayList<>();
-        for (Map.Entry<Integer, Command> keyCommand : commands.entrySet()) {
+        for (Map.Entry<Integer, Command> keyCommand : whileHeld.entrySet()) {
             if (keyboard.isKeyPressed(keyCommand.getKey())) {
+                pressed.add(keyCommand.getValue());
+            }
+        }
+        for (Map.Entry<Integer, Command> keyCommand : onPress.entrySet()) {
+            if (keyboard.isKeyJustPressed(keyCommand.getKey())) {
                 pressed.add(keyCommand.getValue());
             }
         }

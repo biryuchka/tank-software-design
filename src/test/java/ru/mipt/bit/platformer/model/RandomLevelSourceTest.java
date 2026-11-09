@@ -76,6 +76,26 @@ class RandomLevelSourceTest {
     }
 
     @Test
+    void givesEveryTankHealthWithinTheExpectedRange() {
+        Level level = new RandomLevelSource(10, 8, 5, 4, 11L).load();
+
+        for (Combatant combatant : level.getCombatants()) {
+            Tank tank = (Tank) combatant;
+            assertTrue(tank.getHealth() >= RandomLevelSource.MIN_AI_TANK_HEALTH,
+                    "a tank cannot be weaker than that");
+            assertTrue(tank.getHealth() <= RandomLevelSource.MAX_AI_TANK_HEALTH);
+            assertEquals(tank.getMaxHealth(), tank.getHealth(), "every tank starts with full health");
+        }
+    }
+
+    @Test
+    void thePlayerStartsWithFullHealth() {
+        Level level = new RandomLevelSource(10, 8, 5, 4, 11L).load();
+
+        assertEquals(Tank.DEFAULT_HEALTH, ((Tank) level.getPlayer()).getHealth());
+    }
+
+    @Test
     void refusesToPlaceMoreTreesThanTilesAvailable() {
         assertThrows(IllegalArgumentException.class, () -> new RandomLevelSource(2, 2, 4, 0, 0L));
     }

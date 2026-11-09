@@ -9,6 +9,9 @@ import java.util.Set;
 /** Scatters trees and AI tanks over the field and puts the player on one of the tiles left. */
 public class RandomLevelSource implements LevelSource {
 
+    public static final int MIN_AI_TANK_HEALTH = 80;
+    public static final int MAX_AI_TANK_HEALTH = Tank.DEFAULT_HEALTH;
+
     private final int width;
     private final int height;
     private final int treeCount;
@@ -42,10 +45,14 @@ public class RandomLevelSource implements LevelSource {
             level.addObstacle(new Tree(freeTile(random, taken)));
         }
         for (int i = 0; i < aiTankCount; i++) {
-            level.addCombatant(new Tank(freeTile(random, taken), Direction.RIGHT));
+            level.addCombatant(new Tank(freeTile(random, taken), Direction.RIGHT, randomHealth(random)));
         }
         level.addPlayer(new Tank(freeTile(random, taken), Direction.RIGHT));
         return level;
+    }
+
+    private int randomHealth(Random random) {
+        return MIN_AI_TANK_HEALTH + random.nextInt(MAX_AI_TANK_HEALTH - MIN_AI_TANK_HEALTH + 1);
     }
 
     private GridPoint2 freeTile(Random random, Set<GridPoint2> taken) {

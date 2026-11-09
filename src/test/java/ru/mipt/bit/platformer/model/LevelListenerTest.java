@@ -59,7 +59,7 @@ class LevelListenerTest {
     void listenerHearsAboutObjectsLeavingTheLevel() {
         Level level = new Level(10, 8);
         Tank player = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
-        Tank target = new Tank(new GridPoint2(2, 1), Direction.LEFT, 0.4f, 0, 0f);
+        Tank target = new Tank(new GridPoint2(2, 1), Direction.LEFT, 0.4f, 1, 0f);
         level.addPlayer(player);
         level.addCombatant(target);
         RecordingListener listener = new RecordingListener();

@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.GridPoint2;
 public class Bullet implements GameObject, Movable {
 
     public static final float DEFAULT_SPEED = 0.12f;
-    public static final int DEFAULT_DAMAGE = 1;
+    public static final int DEFAULT_DAMAGE = 20;
 
     private final Movement movement;
     private final Direction direction;

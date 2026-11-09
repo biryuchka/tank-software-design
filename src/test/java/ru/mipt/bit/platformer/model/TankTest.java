@@ -107,12 +107,37 @@ class TankTest {
     }
 
     @Test
-    void losesHealthWhenHitAndLeavesTheLevelOnlyWhenItGoesNegative() {
-        Tank target = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 1, 0.5f);
+    void losesHealthWhenHitAndLeavesTheLevelOnceItIsOut() {
+        Tank target = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 40, 0.5f);
 
-        assertFalse(target.hit(1));
+        assertFalse(target.hit(20));
+        assertEquals(20, target.getHealth());
+        assertTrue(target.hit(20));
         assertEquals(0, target.getHealth());
-        assertTrue(target.hit(1));
+    }
+
+    @Test
+    void startsWithFullHealth() {
+        assertEquals(Tank.DEFAULT_HEALTH, tank.getHealth());
+        assertEquals(Tank.DEFAULT_HEALTH, tank.getMaxHealth());
+        assertEquals(1f, tank.getHealthRatio());
+    }
+
+    @Test
+    void reportsTheShareOfHealthLeft() {
+        Tank target = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 100);
+
+        target.hit(25);
+
+        assertEquals(0.75f, target.getHealthRatio());
+    }
+
+    @Test
+    void tanksMayBeGivenDifferentHealth() {
+        Tank worn = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 80);
+
+        assertEquals(80, worn.getHealth());
+        assertEquals(80, worn.getMaxHealth());
     }
 
     @Test
