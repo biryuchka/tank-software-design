@@ -2,14 +2,14 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-public class Tank implements GameObject, Combatant {
+public class Tank implements GameObject, Combatant, HealthHolder {
 
     public static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
-    public static final int DEFAULT_HEALTH = 3;
+    public static final int DEFAULT_HEALTH = 100;
     public static final float DEFAULT_RELOAD_TIME = 0.7f;
 
     private final Movement movement;
-    private int health;
+    private final Health health;
     private final float reloadTime;
     private float timeSinceLastShot;
 
@@ -21,9 +21,13 @@ public class Tank implements GameObject, Combatant {
         this(coordinates, direction, movementSpeed, DEFAULT_HEALTH, DEFAULT_RELOAD_TIME);
     }
 
+    public Tank(GridPoint2 coordinates, Direction direction, int health) {
+        this(coordinates, direction, DEFAULT_MOVEMENT_SPEED, health, DEFAULT_RELOAD_TIME);
+    }
+
     public Tank(GridPoint2 coordinates, Direction direction, float movementSpeed, int health, float reloadTime) {
         this.movement = new Movement(coordinates, direction, movementSpeed);
-        this.health = health;
+        this.health = new Health(health);
         this.reloadTime = reloadTime;
         this.timeSinceLastShot = reloadTime;
     }
@@ -67,15 +71,26 @@ public class Tank implements GameObject, Combatant {
         return movement.isMoving();
     }
 
+    @Override
     public int getHealth() {
-        return health;
+        return health.getCurrent();
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return health.getMaximum();
+    }
+
+    @Override
+    public float getHealthRatio() {
+        return health.getRatio();
     }
 
     @Override
     public boolean hit(int damage) {
-        health -= damage;
-        // a tank with negative health leaves the level
-        return health < 0;
+        health.damage(damage);
+        // a tank without health left leaves the level
+        return !health.isAlive();
     }
 
     @Override

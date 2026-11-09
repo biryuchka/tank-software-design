@@ -4,4 +4,7 @@ package ru.mipt.bit.platformer.controller;
 public interface Keyboard {
 
     boolean isKeyPressed(int key);
+
+    /** True only on the frame the key went down, so that one press means one action. */
+    boolean isKeyJustPressed(int key);
 }
