@@ -90,7 +90,9 @@ public class GameDesktopLauncher implements ApplicationListener {
         level.addListener(levelGraphics);
 
         commandProviders.add(createInputController(level.getPlayer(), levelGraphics));
-        commandProviders.add(createAi());
+        AiCommandProvider ai = createAi();
+        level.addListener(ai);
+        commandProviders.add(ai);
     }
 
     private InputController createInputController(Combatant player, LevelGraphics levelGraphics) {

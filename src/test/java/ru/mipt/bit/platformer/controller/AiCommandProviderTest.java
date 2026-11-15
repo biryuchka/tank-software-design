@@ -53,6 +53,21 @@ class AiCommandProviderTest {
         assertEquals(EVERYTHING_IS_FREE, behaviour.lastField);
     }
 
+    @Test
+    void givesNoOrdersToATankWhichLeftTheLevel() {
+        Tank first = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
+        Tank second = new Tank(new GridPoint2(5, 5), Direction.RIGHT);
+        RecordingBehaviour behaviour = new RecordingBehaviour();
+        AiCommandProvider provider =
+                new AiCommandProvider(asList(first, second), behaviour, EVERYTHING_IS_FREE, NOWHERE);
+
+        provider.onObjectRemoved(first);
+        Collection<Command> commands = provider.commands();
+
+        assertEquals(1, commands.size());
+        assertEquals(asList(second), behaviour.asked);
+    }
+
     private static class RecordingBehaviour implements TankBehaviour {
 
         private final List<Combatant> asked = new ArrayList<>();

@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import ru.mipt.bit.platformer.model.GameObject;
 import ru.mipt.bit.platformer.model.HealthHolder;
-import ru.mipt.bit.platformer.model.Movable;
+import ru.mipt.bit.platformer.model.Moving;
 
 /** Hangs a health bar over every moving object which has health, and takes it off on demand. */
 public class HealthBarDecorator implements RenderableDecorator {
@@ -42,7 +42,7 @@ public class HealthBarDecorator implements RenderableDecorator {
     }
 
     private boolean hasHealthBar(GameObject object) {
-        return object instanceof Movable && object instanceof HealthHolder;
+        return object instanceof Moving && object instanceof HealthHolder;
     }
 
     private static Texture whitePixel() {

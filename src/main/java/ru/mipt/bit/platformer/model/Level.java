@@ -4,7 +4,9 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Level implements Field, BulletRegistry {
 
@@ -79,6 +81,7 @@ public class Level implements Field, BulletRegistry {
 
     /** One tick of the world: everybody lives through the time passed, then the bullets are resolved. */
     public void update(float deltaTime) {
+        Map<GameObject, GridPoint2> tilesBefore = tiles();
         for (Combatant combatant : new ArrayList<>(combatants)) {
             combatant.update(deltaTime);
         }
@@ -86,15 +89,25 @@ public class Level implements Field, BulletRegistry {
             bullet.update(deltaTime);
         }
         for (Bullet bullet : new ArrayList<>(bullets)) {
-            resolve(bullet);
+            if (bullets.contains(bullet)) {
+                resolve(bullet, tilesBefore);
+            }
         }
     }
 
-    private void resolve(Bullet bullet) {
+    private Map<GameObject, GridPoint2> tiles() {
+        Map<GameObject, GridPoint2> tiles = new IdentityHashMap<>();
+        for (GameObject object : objects) {
+            tiles.put(object, object.getCoordinates());
+        }
+        return tiles;
+    }
+
+    private void resolve(Bullet bullet, Map<GameObject, GridPoint2> tilesBefore) {
         if (bullet.isMoving()) {
             return;
         }
-        GameObject target = objectAt(bullet.getCoordinates(), bullet);
+        GameObject target = targetOf(bullet, tilesBefore);
         if (target != null) {
             if (target.hit(bullet.getDamage())) {
                 remove(target);
@@ -108,9 +121,14 @@ public class Level implements Field, BulletRegistry {
         }
     }
 
-    private GameObject objectAt(GridPoint2 coordinates, GameObject except) {
-        for (GameObject object : objects) {
-            if (object != except && object.getCoordinates().equals(coordinates)) {
+    private GameObject targetOf(Bullet bullet, Map<GameObject, GridPoint2> tilesBefore) {
+        GridPoint2 tile = bullet.getCoordinates();
+        for (GameObject object : new ArrayList<>(objects)) {
+            if (object == bullet) {
+                continue;
+            }
+            GridPoint2 tileBefore = tilesBefore.get(object);
+            if (object.getCoordinates().equals(tile) || (tileBefore != null && tileBefore.equals(tile))) {
                 return object;
             }
         }

@@ -125,6 +125,50 @@ class LevelBulletsTest {
     }
 
     @Test
+    void twoBulletsFlyingAtEachOtherNeverSlipPast() {
+        Tank opponent = new Tank(new GridPoint2(6, 1), Direction.LEFT);
+        level.addCombatant(opponent);
+
+        player.shoot(level);
+        opponent.shoot(level);
+        for (int i = 0; i < 3; i++) {
+            level.update(LONG_ENOUGH_TO_FLY_A_TILE);
+        }
+
+        assertEquals(2, level.getObjects().size());
+        assertEquals(Tank.DEFAULT_HEALTH, player.getHealth());
+        assertEquals(Tank.DEFAULT_HEALTH, opponent.getHealth());
+    }
+
+    @Test
+    void tankDoesNotDriveAwayFromTheBulletWhichHasAlreadyReachedIt() {
+        Tank target = new Tank(new GridPoint2(3, 1), Direction.LEFT);
+        level.addCombatant(target);
+        player.shoot(level);
+        level.update(0.01f);
+
+        target.move(Direction.UP, level);
+        level.update(LONG_ENOUGH_TO_FLY_A_TILE);
+
+        assertEquals(Tank.DEFAULT_HEALTH - Bullet.DEFAULT_DAMAGE, target.getHealth());
+        assertEquals(2, level.getObjects().size());
+    }
+
+    @Test
+    void destroyedTankFiresNoMoreEvenWhenSomebodyStillHoldsIt() {
+        Tank target = new Tank(new GridPoint2(4, 1), Direction.LEFT, 0.4f, 1, 0f);
+        level.addCombatant(target);
+        player.shoot(level);
+        for (int i = 0; i < 5; i++) {
+            level.update(LONG_ENOUGH_TO_FLY_A_TILE);
+        }
+
+        target.shoot(level);
+
+        assertEquals(1, level.getObjects().size());
+    }
+
+    @Test
     void bulletsDoNotBlockTanks() {
         player.shoot(level);
 

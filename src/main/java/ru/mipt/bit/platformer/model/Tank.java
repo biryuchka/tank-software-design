@@ -1,6 +1,9 @@
 package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.model.state.HealthStates;
+import ru.mipt.bit.platformer.model.state.TankState;
+import ru.mipt.bit.platformer.model.state.TankStates;
 
 public class Tank implements GameObject, Combatant, HealthHolder {
 
@@ -8,9 +11,13 @@ public class Tank implements GameObject, Combatant, HealthHolder {
     public static final int DEFAULT_HEALTH = 100;
     public static final float DEFAULT_RELOAD_TIME = 0.7f;
 
+    private static final TankStates DEFAULT_STATES = new HealthStates();
+
     private final Movement movement;
     private final Health health;
+    private final TankStates states;
     private final float reloadTime;
+    private TankState state;
     private float timeSinceLastShot;
 
     public Tank(GridPoint2 coordinates, Direction direction) {
@@ -26,15 +33,22 @@ public class Tank implements GameObject, Combatant, HealthHolder {
     }
 
     public Tank(GridPoint2 coordinates, Direction direction, float movementSpeed, int health, float reloadTime) {
+        this(coordinates, direction, movementSpeed, health, reloadTime, DEFAULT_STATES);
+    }
+
+    public Tank(GridPoint2 coordinates, Direction direction, float movementSpeed, int health, float reloadTime,
+                TankStates states) {
         this.movement = new Movement(coordinates, direction, movementSpeed);
         this.health = new Health(health);
+        this.states = states;
+        this.state = states.stateOf(this.health.getRatio());
         this.reloadTime = reloadTime;
         this.timeSinceLastShot = reloadTime;
     }
 
     @Override
     public void move(Direction direction, Field field) {
-        if (isMoving()) {
+        if (!state.canMove() || isMoving()) {
             return;
         }
         GridPoint2 nextCoordinates = direction.apply(movement.getCoordinates());
@@ -47,7 +61,7 @@ public class Tank implements GameObject, Combatant, HealthHolder {
 
     @Override
     public boolean canShoot() {
-        return timeSinceLastShot >= reloadTime;
+        return state.canShoot() && timeSinceLastShot >= reloadTime * state.getReloadTimeFactor();
     }
 
     @Override
@@ -62,7 +76,7 @@ public class Tank implements GameObject, Combatant, HealthHolder {
 
     @Override
     public void update(float deltaTime) {
-        movement.update(deltaTime);
+        movement.update(deltaTime / state.getMovementTimeFactor());
         timeSinceLastShot += deltaTime;
     }
 
@@ -89,8 +103,13 @@ public class Tank implements GameObject, Combatant, HealthHolder {
     @Override
     public boolean hit(int damage) {
         health.damage(damage);
+        state = states.stateOf(health.getRatio());
         // a tank without health left leaves the level
         return !health.isAlive();
+    }
+
+    public TankState getState() {
+        return state;
     }
 
     @Override
