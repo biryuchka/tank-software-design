@@ -9,8 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BulletTest {
 
-    private static final Field EVERYTHING_IS_FREE = coordinates -> true;
-
     @Test
     void standsStillUntilItIsSentOn() {
         Bullet bullet = new Bullet(new GridPoint2(2, 2), Direction.UP);
@@ -50,10 +48,8 @@ class BulletTest {
     void takesNoOrders() {
         Bullet bullet = new Bullet(new GridPoint2(2, 2), Direction.RIGHT);
 
-        bullet.move(Direction.DOWN, EVERYTHING_IS_FREE);
-
-        assertFalse(bullet.isMoving());
-        assertEquals(Direction.RIGHT.getRotation(), bullet.getRotation());
+        assertFalse(bullet instanceof Movable);
+        assertTrue(bullet instanceof Moving);
     }
 
     @Test

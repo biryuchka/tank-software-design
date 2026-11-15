@@ -3,13 +3,15 @@ package ru.mipt.bit.platformer.controller;
 import ru.mipt.bit.platformer.model.BulletRegistry;
 import ru.mipt.bit.platformer.model.Combatant;
 import ru.mipt.bit.platformer.model.Field;
+import ru.mipt.bit.platformer.model.GameObject;
+import ru.mipt.bit.platformer.model.LevelListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /** Asks the behaviour what every unit under AI control should do this frame. */
-public class AiCommandProvider implements CommandProvider {
+public class AiCommandProvider implements CommandProvider, LevelListener {
 
     private final List<Combatant> tanks;
     private final TankBehaviour behaviour;
@@ -22,6 +24,15 @@ public class AiCommandProvider implements CommandProvider {
         this.behaviour = behaviour;
         this.field = field;
         this.registry = registry;
+    }
+
+    @Override
+    public void onObjectAdded(GameObject object) {
+    }
+
+    @Override
+    public void onObjectRemoved(GameObject object) {
+        tanks.remove(object);
     }
 
     @Override

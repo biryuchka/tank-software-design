@@ -187,6 +187,49 @@ class TankTest {
     }
 
     @Test
+    void damagedTankCrossesATileTwiceAsSlowly() {
+        Tank damaged = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 100, 0.5f);
+        damaged.hit(50);
+
+        damaged.move(Direction.UP, EVERYTHING_IS_FREE);
+        damaged.update(0.4f);
+
+        assertTrue(damaged.isMoving());
+        damaged.update(0.4f);
+        assertFalse(damaged.isMoving());
+        assertEquals(new GridPoint2(1, 2), damaged.getCoordinates());
+    }
+
+    @Test
+    void nearlyDestroyedTankCrawlsAndItsGunIsOutOfOrder() {
+        Tank wreck = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 100, 0f);
+        wreck.hit(90);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        wreck.shoot(registry);
+
+        assertFalse(wreck.canShoot());
+        assertTrue(registry.bullets.isEmpty());
+        wreck.move(Direction.UP, EVERYTHING_IS_FREE);
+        wreck.update(1f);
+        assertTrue(wreck.isMoving());
+    }
+
+    @Test
+    void destroyedTankNeitherDrivesNorFires() {
+        Tank wreck = new Tank(new GridPoint2(1, 1), Direction.RIGHT, 0.4f, 100, 0f);
+        CollectingRegistry registry = new CollectingRegistry();
+
+        wreck.hit(100);
+        wreck.move(Direction.UP, EVERYTHING_IS_FREE);
+        wreck.shoot(registry);
+
+        assertFalse(wreck.isMoving());
+        assertEquals(new GridPoint2(1, 1), wreck.getCoordinates());
+        assertTrue(registry.bullets.isEmpty());
+    }
+
+    @Test
     void reportsProgressWhileMoving() {
         tank.move(Direction.UP, EVERYTHING_IS_FREE);
 

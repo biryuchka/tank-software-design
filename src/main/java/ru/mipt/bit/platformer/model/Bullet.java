@@ -3,7 +3,7 @@ package ru.mipt.bit.platformer.model;
 import com.badlogic.gdx.math.GridPoint2;
 
 /** Flies tile by tile in one direction until it hits something or leaves the field. */
-public class Bullet implements GameObject, Movable {
+public class Bullet implements GameObject, Moving {
 
     public static final float DEFAULT_SPEED = 0.12f;
     public static final int DEFAULT_DAMAGE = 20;
@@ -37,11 +37,6 @@ public class Bullet implements GameObject, Movable {
 
     public GridPoint2 getNextCoordinates() {
         return movement.getNextCoordinates();
-    }
-
-    @Override
-    public void move(Direction direction, Field field) {
-        // a bullet keeps its own course and takes no orders
     }
 
     @Override
